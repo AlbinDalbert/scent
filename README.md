@@ -1,4 +1,4 @@
-# scent
+# scent 👃
 
 **scent: the Ninth Sentinel’s strongest sense**
 
