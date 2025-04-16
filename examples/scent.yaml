@@ -1,0 +1,7 @@
+commands:
+  - name: Check logs
+    shorthand: logs
+    run: journalctl -u myservice --since today
+  - name: Restart service
+    shorthand: sc
+    run: systemctl restart myservice
