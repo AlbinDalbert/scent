@@ -1,8 +1,9 @@
 use clap::Parser;
-use cli_toolbox::cli::{Menu, System};
+use cli_toolbox::cli::System;
 use serde::Deserialize;
 use std::fs;
 use std::path::PathBuf;
+use std::process::exit;
 
 /// scent: the Ninth Sentinel’s strongest sense
 #[derive(Parser)]
@@ -29,26 +30,12 @@ fn main() {
     let mut sys = System::new("scent".to_string());
     
     let args = Args::parse();
-    
-    let config_path = find_config_file(&args)
-    .expect("No config file found! Please create ~/.config/scent/scent.yaml or use --config.");
 
-    println!("Using config: {}", config_path.display());
-    
-    let file_content = fs::read_to_string(&config_path)
-    .expect("Failed to read config file");
+    if check_built_in_commands(&args) { 
+        exit(0) 
+    };
 
-    let mut config: Config = serde_yaml::from_str(&file_content)
-    .expect("Failed to parse YAML config");
-
-    for cmd in &mut config.commands {
-        if let Some(sh) = &cmd.shorthand {
-            if sh == "sc" {
-                println!("Warning: 'sc' is a reserved shorthand for opening the scent config file and won't be accessable.");
-                cmd.shorthand = None;
-            }
-        }
-    }
+    let config = load_configs(args);
         
     println!("Loaded commands:");
     for cmd in &config.commands {
@@ -62,12 +49,41 @@ fn main() {
     }
 
     sys.menu();
-    
-    // Now you can use `config.commands` in your menu logic!
 }
 
 fn my_fn() {
     println!("ello");
+}
+
+fn check_built_in_commands(args: &Args) -> bool {
+
+    todo!();
+
+    false
+}
+
+fn load_configs(args:Args) -> Config {
+    let config_path = find_config_file(&args)
+        .expect("No config file found! Please create ~/.config/scent/scent.yaml or use --config.");
+
+    println!("Using config: {}", config_path.display());
+
+    let file_content = fs::read_to_string(&config_path)
+        .expect("Failed to read config file");
+
+    let mut config: Config = serde_yaml::from_str(&file_content)
+        .expect("Failed to parse YAML config");
+
+    for cmd in &mut config.commands {
+        if let Some(sh) = &cmd.shorthand {
+            if sh == "sc" {
+                println!("Warning: 'sc' is a reserved shorthand for opening the scent config file and won't be accessable.");
+                cmd.shorthand = None;
+            }
+        }
+    }
+
+    return config;
 }
 
 fn find_config_file(args: &Args) -> Option<PathBuf> {
